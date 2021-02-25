@@ -3,7 +3,7 @@ import { navigate } from '@reach/router';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import { Container, Button, makeStyles } from '@material-ui/core';
 import { Formik, Form } from 'formik';
-import { loginValidationSchema } from './validation';
+import { loginValidationSchema } from './validation/validation';
 import FormikTextField from './components/FormikTextField'
 import axios from 'axios';
 import config from '../../config/config';
