@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import Button from '@material-ui/core/Button';
-import { makeStyles } from '@material-ui/core/styles';
+import { navigate } from '@reach/router';
+import { Alert, AlertTitle } from '@material-ui/lab';
+import { Container, Button, makeStyles } from '@material-ui/core';
 import { Formik, Form } from 'formik';
 import { loginValidationSchema } from './validation';
-import Container from '@material-ui/core/Container';
+import FormikTextField from './components/FormikTextField'
 import axios from 'axios';
 import config from '../../config/config';
 import { ILoginForm, IFormStatus} from '../../interfaces/login';
-import FormikTextField from './components/FormikTextField'
-import { Alert, AlertTitle } from '@material-ui/lab';
+
+
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -27,7 +28,7 @@ const useStyles = makeStyles(theme => ({
     errorMessage: { color: 'red' },
 }));
 
-export default function Login(props: any) {
+export default function Login() {
 
     const classes = useStyles();
     const [formStatus, setFormStatus] = useState<IFormStatus>({
@@ -36,10 +37,10 @@ export default function Login(props: any) {
     const [showError, setShowError] = useState(false)
 
     useEffect(() => {
-    if (sessionStorage.getItem('loggedIn')) {
-        props.history.push('/home');
+    if (localStorage.getItem('loggedIn') === 'true') {
+        navigate('/home');
     }
-    });
+    }, []);
 
     return (    
         <Container component="main" maxWidth="xs">
@@ -52,16 +53,17 @@ export default function Login(props: any) {
                     onSubmit={(values: ILoginForm, formikBag) => {
                     axios
                         .post(`${config.api.login}`, {
-                        username: values.email,
-                        password: values.password
+                            username: values.email,
+                            password: values.password
                         })
                         .then(response => {
-                        console.log(response)
-                        setShowError(false)
+                            localStorage.setItem('loggedIn', 'true')
+                            localStorage.setItem('userData', JSON.stringify(response.data.user))
+                            navigate('/home');
                         })
                         .catch(error => { 
-                        setFormStatus(error)
-                        setShowError(true)
+                            setFormStatus(error)
+                            setShowError(true)
                         })
                         .finally(() => formikBag.resetForm());
                     }}
@@ -69,15 +71,15 @@ export default function Login(props: any) {
                 >
                     <Form>
                         <FormikTextField formikKey="email" variant="outlined" label="Email" autoFocus className={classes.form}/>
-                        <FormikTextField formikKey="password" variant="outlined" label="Password" className={classes.form}/>
+                        <FormikTextField formikKey="password" variant="outlined" label="Password" className={classes.form} type="password"/>
                         <Button type="submit" fullWidth variant="outlined" color="primary" className={classes.submit}>
                             Login
                         </Button>
                         {showError ? 
-                        (<Alert severity="error">
-                            <AlertTitle><strong>Error</strong></AlertTitle>
-                            {formStatus.message}
-                        </Alert>) : null }
+                            (<Alert severity="error">
+                                <AlertTitle><strong>Error</strong></AlertTitle>
+                                {formStatus.message}
+                            </Alert>) : null }
                     </Form>
                 </Formik>
             </div>
